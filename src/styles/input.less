@@ -1,0 +1,81 @@
+// @import './lessvars.less';
+
+.input-wrapper {
+  display: flex;
+  position: relative;
+
+  .input {
+    flex: 1;
+    font-size: 32px;
+    font-family: 'Gabriola';
+    outline: none;
+    // border: 1px solid rgba(106, 176, 76, 0.4);
+    border: 1px solid @input-border-color;
+    padding: 0 24px;
+    transition: border-color 0.3s cubic-bezier(0.77, 0, 0.175, 1),
+      background-color 0.3s cubic-bezier(0.77, 0, 0.175, 1);
+    border-radius: 2px;
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+    background-color: @input-background;
+
+    &:focus,
+    &:hover {
+      border-color: @btn-background;
+      background-color: @input-focus-background;
+    }
+  }
+
+  .confirm {
+    width: 160px;
+    font-size: 24px;
+    border-radius: 2px;
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+    background-color: @btn-background;
+    border: none;
+    outline: none;
+    color: #fff;
+    cursor: pointer;
+    transition: opacity 0.3s cubic-bezier(0.77, 0, 0.175, 1);
+
+    &:hover {
+      opacity: 0.8;
+    }
+  }
+
+  .operator-list {
+    color: #333;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    position: absolute;
+    width: 840px;
+    top: 64px;
+
+    .item {
+      width: 64px;
+      height: 64px;
+      line-height: 64px;
+      text-align: center;
+      font-size: 32px;
+      margin-right: 12px;
+      margin-top: 12px;
+      background-color: @input-background;
+      user-select: none;
+      border: 1px solid @input-border-color;
+      box-shadow: @boxshadow;
+      cursor: pointer;
+      transition: border-color 0.3s cubic-bezier(0.77, 0, 0.175, 1),
+        background-color 0.3s cubic-bezier(0.77, 0, 0.175, 1);
+
+      &:hover {
+        border-color: @btn-background;
+        background-color: @input-focus-background;
+      }
+    }
+  }
+}

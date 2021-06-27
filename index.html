@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>数学函数图像</title>
+</head>
+<body>
+  <section class="container">
+    <section class="wrapper control-wrapper">目前仅支持正数和偶函数😁</section>
+    <section class="wrapper graph-wrapper">
+      <canvas id="graph"></canvas>
+    </section>
+    <section class="wrapper input-wrapper">
+      <input class="input" id="expression" type="text" placeholder="example: y=x" value="y=x^2" />
+      <ul class="operator-list" id="operator-wrapper"></ul>
+      <button class="confirm" id="confirm">Confirm</button>
+    </section>
+  </section>
+  <script type="module" src="./src/index.ts"></script>
+</body>
+</html>

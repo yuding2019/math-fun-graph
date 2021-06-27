@@ -1,0 +1,11 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "target": "ESNext",
+    "allowJs": true,
+    "noEmit": true,
+    "baseUrl": ".",
+    "strict": true,
+  },
+  "include": ["src/**/*"]
+}

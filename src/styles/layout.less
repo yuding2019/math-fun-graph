@@ -1,0 +1,34 @@
+.container {
+  position: relative;
+  width: 1212px;
+  height: 876px;
+  margin: auto;
+  top: 100px;
+  // transform: translateY(-50%);
+  display: grid;
+  grid-template-rows: 800px 64px;
+  grid-template-columns: 300px 900px;
+  grid-template-areas: 'control graph' 'input input';
+  gap: @base-gap;
+
+  color: #fff;
+  .wrapper {
+    border-radius: 2px;
+    box-shadow: @boxshadow;
+  }
+
+  .control-wrapper {
+    grid-area: control;
+    background-color: rosybrown;
+    padding: 12px;
+  }
+
+  .graph-wrapper {
+    grid-area: graph;
+    background-color: #eee;
+  }
+
+  .input-wrapper {
+    grid-area: input;
+  }
+}
