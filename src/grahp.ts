@@ -154,21 +154,30 @@ function drawMathFunGraph() {
   ctx.clearRect(0, 0, Width, Height);
   ctx.drawImage(CacheRef.current.canvas, 0, 0, Width, Height);
 
-  return (points: [number, number][]) => {
-    const [[currentX, currentY], ...rest] = points;
+  return (...points: [number, number][][]) => {
+    const [points1, points2] = points;
+
+    let [[currentX, currentY], ...rest] = points1;
+    console.log(points);
     ctx.save();
     ctx.translate(Width / 2, Height / 2);
     ctx.strokeStyle = '#1B9CFC';
     ctx.lineWidth = 2;
     ctx.beginPath();
+
     ctx.moveTo(currentX, -currentY);
     rest.forEach(([x, y]) => {
       ctx.lineTo(x, -y);
     });
-    ctx.moveTo(-currentX, -currentY);
-    rest.forEach(([x, y]) => {
-      ctx.lineTo(-x, -y);
-    });
+
+    if (points2.length) {
+      [[currentX, currentY], ...rest] = points2;
+      ctx.moveTo(currentX, -currentY);
+      rest.forEach(([x, y]) => {
+        ctx.lineTo(x, -y);
+      });
+    }
+
     ctx.stroke();
     ctx.restore();
   };
@@ -178,30 +187,56 @@ export default function waitProcess() {
   drawAxis();
 
   emit.on('process:finish', (exp) => {
-    // const it = calcIterator(exp as Expression, 0, 20);
     const _draw = drawMathFunGraph();
+    const expNode = (exp as Expression).node;
+
+    // 是否可以取0
+    const canBe0 = Number.isFinite(calcExpression(expNode, 0));
+    const value1 = calcExpression(expNode, 1);
+    const value2 = calcExpression(expNode, -1);
+    // y轴对称
+    const bilateralY = value1 === value2;
+    // 原点对称
+    const bilateralO = !bilateralY && Math.abs(value1) === Math.abs(value2);
 
     let timer: number | null = null;
-    let x = 0.1;
+    let x1 = canBe0 ? 0 : 0.1; // x轴正方向
+    let x2 = canBe0 ? 0 : 0.1; // x轴负方向
     const map = () => {
-      x -= 0.1;
+      // 这里计算的坐标是标准坐标
+      const points1: [number, number][] = [];
+      const points2: [number, number][] = [];
 
-      const points: [number, number][] = [];
-      for (let i = 0; i <= 10; i++) {
-        const _x = +Number((x * baseMarkWidth).toFixed(2));
-        const _y = +Number((+calcExpression((exp as Expression).node, x) * baseMarkWidth).toFixed(2))        
-        points.push([_x, _y]);
+      let _x1 = 0;
+      let _y1 = 0;
+      let _x2 = 0;
+      let _y2 = 0;
+      for (let i = 0; i < 10; i++) {
+        _x1 = Number((x1 * baseMarkWidth).toFixed(2));
+        _y1 = Number((calcExpression(expNode, x1) * baseMarkWidth).toFixed(2));
+        points1.push([_x1, _y1]);
+        // 对称的话，只需要计算一次
+        if (bilateralY || bilateralO) {
+          bilateralY ? points2.push([-_x1, _y1]) : points2.push([-_x1, -_y1]);
+        } else {
+          _x2 = Number((x2 * baseMarkWidth).toFixed(2));
+          _y2 = Number((calcExpression(expNode, x2) * baseMarkWidth).toFixed(2));
+          points2.push([_x2, _y2]);
+        }
 
-        if (x > 12 || _y > Height / 2) {
-          _draw(points);
+        if (x1 > 12 || _y1 > Height / 2 || _y2 < -Height / 2) {
+          _draw(points1, points2);
           timer && cancelAnimationFrame(timer);
           timer = null;
           return;
         }
-        x += 0.1;
+        x1 += 0.1;
+        x2 -= 0.1;
       }
-      console.log(points);
-      _draw(points);
+      x1 -= 0.1;
+      x2 += 0.1;
+
+      _draw(points1, points2);
       requestAnimationFrame(map);
     }
     map();
