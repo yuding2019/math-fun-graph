@@ -158,7 +158,6 @@ function drawMathFunGraph() {
     const [points1, points2] = points;
 
     let [[currentX, currentY], ...rest] = points1;
-    console.log(points);
     ctx.save();
     ctx.translate(Width / 2, Height / 2);
     ctx.strokeStyle = '#1B9CFC';
@@ -201,7 +200,7 @@ export default function waitProcess() {
 
     let timer: number | null = null;
     let x1 = canBe0 ? 0 : 0.1; // x轴正方向
-    let x2 = canBe0 ? 0 : 0.1; // x轴负方向
+    let x2 = canBe0 ? 0 : -0.1; // x轴负方向
     const map = () => {
       // 这里计算的坐标是标准坐标
       const points1: [number, number][] = [];
@@ -224,7 +223,10 @@ export default function waitProcess() {
           points2.push([_x2, _y2]);
         }
 
-        if (x1 > 12 || _y1 > Height / 2 || _y2 < -Height / 2) {
+        if (
+          x1 > 1 &&
+          (x1 > 12 || _y1 > Height / 2 || _y2 < -Height / 2)
+        ) {
           _draw(points1, points2);
           timer && cancelAnimationFrame(timer);
           timer = null;

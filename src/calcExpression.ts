@@ -1,4 +1,4 @@
-import { Operator, OperatorMap } from "./config";
+import { Operator } from "./config";
 import { ExpNode } from "./processExpression";
 
 export function calc(op: string, left: string | number, right: string | number, x: number) {
@@ -17,6 +17,7 @@ export function calc(op: string, left: string | number, right: string | number, 
       res = leftValue * rightValue;
       break;
     case Operator.Divide:
+    case Operator.Divide2:
       res = leftValue / rightValue;
       break;
     case Operator.Power:
