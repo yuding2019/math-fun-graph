@@ -119,13 +119,14 @@ function process(exp: string) {
     // 负数在第一位
     if (
       (i === 0 && NumberReg.test(right[i + 1])) ||
+      char === Operator.Dot ||
       NumberReg.test(char)
     ) {
       numStr += char;
       continue;
     }
 
-    if (char === Operator.X) {
+    if ([Operator.X, Operator.Left].includes(char)) {
       if (numStr) {
         tokens.push(numStr, Operator.Multiply);
         numStr = '';
@@ -145,7 +146,7 @@ function process(exp: string) {
   if (numStr) {
     tokens.push(numStr);
   }
-
+  debugger;
   if (!tokens.length || (tokens.length === 1 && tokens[0] !== Operator.X && Number.isNaN(+tokens[0]))) {
     throw new Error('函数是不是写错了呀，我怎么解析不了了');
   }

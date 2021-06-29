@@ -11,6 +11,7 @@ export const Operator = {
   Sqrt: '√',
   Left: '(',
   Right: ')',
+  Dot: '.',
 };
 
 export const NumberReg = /\-?[0-9]+/;
