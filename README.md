@@ -1,7 +1,10 @@
 # 绘制简单函数图像
 
+#### [预览地址](https://math-fun-grahp.onrender.com)
+
 ![example](./images/example.png)
 ![example](./images/example2.png)
+
 
 1. 使用`canvas`进行绘制
 2. 使用 [vite](https://cn.vitejs.dev/) + `typescript` + `less`开发
