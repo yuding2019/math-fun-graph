@@ -1,4 +1,4 @@
-export type CustomEventName = 'confirm:exp' | 'process:finish';
+export type CustomEventName = 'confirm:exp' | 'process:finish' | 'error';
 export type Handler = (value: unknown) => void;
 
 const EventPools: Partial<Record<CustomEventName, Handler[]>> = {};

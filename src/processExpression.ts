@@ -53,23 +53,24 @@ function generatorExpNodeTree(tokens: string[]): ExpNode {
     const right = nodes[index + 1];
 
     const root = expNode('operator', operator);
-    root.left = typeof left === 'object'
-      ? left
-      : expNode(NumberReg.test(left) ? 'number' : 'var', left);
-    root.right = typeof right === 'object'
-      ? right
-      : expNode(NumberReg.test(right) ? 'number' : 'var', right);
-    
+    root.right = typeof right === 'object' ? right : expNode(NumberReg.test(right) ? 'number' : 'var', right);
+    // 根号特殊处理
+    if (operator === Operator.Sqrt) {
+      nodes.splice(index, 2, root);
+      return root;
+    }
+
+    root.left = typeof left === 'object' ? left : expNode(NumberReg.test(left) ? 'number' : 'var', left);    
     nodes.splice(index - 1, 3, root);
     return root;
   }
 
-  // 每次寻找操作符，优先寻找幂，然后 乘 除，最后 加 减
+  // 每次寻找操作符，优先寻找幂 开方，然后 乘 除，最后 加 减
   // 取操作符两边的节点，然后调用`helper`构造一个ExpNode
   // 优先级高的运算操作在二叉树层级较高的地方，然后计算的时候，深度优先遍历进行计算，就完成运算符的优先级计算
   while (nodes.length !== 1) {
-    let index = nodes.findIndex(node => typeof node === 'string' && [Operator.Power].includes(node));
-    if (index > 0) {
+    let index = nodes.findIndex(node => typeof node === 'string' && [Operator.Power, Operator.Sqrt].includes(node));
+    if (index >= 0) {
       helper(index);
       continue;
     }
@@ -101,6 +102,7 @@ function process(exp: string) {
 
   let numStr = '';
   const tokens: string[] = [];
+  const brackets: string[] = [];
   for (let i = 0; i < right.length; i++) {
     const char = right[i];
     if (char === ' ') continue;
@@ -108,7 +110,7 @@ function process(exp: string) {
     // 判断 `-x`
     if (i === 0 && char === Operator.Minus) {
       const next = right[i + 1];
-      if (next === Operator.X) {
+      if ([Operator.X, Operator.Sqrt].includes(next)) {
         tokens.push('-1', Operator.Multiply);
       } else if (NumberReg.test(next)) {
         numStr += char;
@@ -132,6 +134,10 @@ function process(exp: string) {
         numStr = '';
       }
       tokens.push(char);
+
+      if (char === Operator.Left) {
+        brackets.push(Operator.Right);
+      }
       continue;
     }
 
@@ -141,12 +147,20 @@ function process(exp: string) {
         numStr = '';
       }
       tokens.push(char);
+
+      if (char === Operator.Right) {
+        brackets.pop();
+      }
     }
   }
   if (numStr) {
     tokens.push(numStr);
   }
-  debugger;
+
+  if (brackets.length) {
+    throw new Error('括号匹配不上了，检查一下表达式吧');
+  }
+
   if (!tokens.length || (tokens.length === 1 && tokens[0] !== Operator.X && Number.isNaN(+tokens[0]))) {
     throw new Error('函数是不是写错了呀，我怎么解析不了了');
   }
@@ -166,7 +180,7 @@ export default function waitConfirm() {
     try {
       process(String(exp));
     } catch (e) {
-      console.log(e);
+      emit.emit('error', e);
     }
   });
 }

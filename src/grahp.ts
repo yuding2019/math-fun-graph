@@ -210,7 +210,7 @@ export default function waitProcess() {
       let _y1 = 0;
       let _x2 = 0;
       let _y2 = 0;
-      for (let i = 0; i < 10; i++) {
+      for (let i = 0; i < 5; i++) {
         _x1 = Number((x1 * baseMarkWidth).toFixed(2));
         _y1 = Number((calcExpression(expNode, x1) * baseMarkWidth).toFixed(2));
         points1.push([_x1, _y1]);

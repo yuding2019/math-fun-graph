@@ -23,6 +23,9 @@ export function calc(op: string, left: string | number, right: string | number, 
     case Operator.Power:
       res = leftValue ** rightValue;
       break;
+    case Operator.Sqrt:
+      res = Math.sqrt(rightValue);
+      break;
     default:
       break;
   }
@@ -31,9 +34,15 @@ export function calc(op: string, left: string | number, right: string | number, 
 }
 
 export default function calcExpression(exp: ExpNode, x: number): number {
-  const { left, right, value } = exp;
+  const { left, right, value, type } = exp;
+
+  if (!left && right && value === Operator.Sqrt) {
+    return right.type === 'operator'
+      ? calc(value, 0, calcExpression(right, x), x)
+      : calc(value, 0, right.value, x);
+  }
   
-  if (!left || !right) return exp.type === 'number' ? Number(value) : x;
+  if (!left || !right) return type === 'number' ? Number(value) : x;
 
   if (left.type !== 'operator' && right.type !== 'operator') {
     return calc(value, left.value, right.value, x);
