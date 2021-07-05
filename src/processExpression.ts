@@ -28,6 +28,13 @@ function expNode(type: ExpType, value: string): ExpNode {
   };
 }
 
+const checkNodeType = (node: ExpNode | string) => {
+  if (typeof node === 'object') return node;
+  return expNode(NumberReg.test(node) ? 'number' : 'var', node);
+}
+const findOperatorIndex = (nodes: (ExpNode | string)[], targetOps: string[]) => {
+  return nodes.findIndex(node => typeof node === 'string' && targetOps.includes(node));
+}
 // 根据解析的token构建二叉树
 function generatorExpNodeTree(tokens: string[]): ExpNode {
   if (tokens.length === 1) {
@@ -54,14 +61,14 @@ function generatorExpNodeTree(tokens: string[]): ExpNode {
     const right = nodes[index + 1];
 
     const root = expNode('operator', operator);
-    root.right = typeof right === 'object' ? right : expNode(NumberReg.test(right) ? 'number' : 'var', right);
+    root.right = checkNodeType(right);
     // 根号特殊处理
     if (operator === Operator.Sqrt) {
       nodes.splice(index, 2, root);
       return root;
     }
 
-    root.left = typeof left === 'object' ? left : expNode(NumberReg.test(left) ? 'number' : 'var', left);    
+    root.left = checkNodeType(left);    
     nodes.splice(index - 1, 3, root);
     return root;
   }
@@ -70,19 +77,19 @@ function generatorExpNodeTree(tokens: string[]): ExpNode {
   // 取操作符两边的节点，然后调用`helper`构造一个ExpNode
   // 优先级高的运算操作在二叉树层级较高的地方，然后计算的时候，深度优先遍历进行计算，就完成运算符的优先级计算
   while (nodes.length !== 1) {
-    let index = nodes.findIndex(node => typeof node === 'string' && [Operator.Power, Operator.Sqrt].includes(node));
+    let index = findOperatorIndex(nodes, [Operator.Power, Operator.Sqrt]);
     if (index >= 0) {
       helper(index);
       continue;
     }
 
-    index = nodes.findIndex(node => typeof node === 'string' && [Operator.Multiply, Operator.Divide, Operator.Divide2].includes(node));
+    index = findOperatorIndex(nodes, [Operator.Multiply, Operator.Divide, Operator.Divide2]);
     if (index > 0) {
       helper(index);
       continue;
     }
 
-    index = nodes.findIndex(node => typeof node === 'string' && [Operator.Plus, Operator.Minus].includes(node));
+    index = findOperatorIndex(nodes, [Operator.Plus, Operator.Minus]);
     if (index > 0) {
       helper(index);
     }
@@ -90,6 +97,11 @@ function generatorExpNodeTree(tokens: string[]): ExpNode {
   return nodes[0] as ExpNode;
 }
 
+const checkMinusX = (str: string, index: number) => index === 0 && str[index] === Operator.Minus;
+const checkNumber = (str: string, index: number) => {
+  if (index === 0) return NumberReg.test(str[index + 1]);
+  return str[index] === Operator.Dot || NumberReg.test(str[index]);
+};
 // 处理表达式
 function process(exp: string) {
   const [_, right, ...rest] = exp.split('=').map(s => s.trim());
@@ -105,7 +117,7 @@ function process(exp: string) {
     if (char === ' ') continue;
 
     // 判断 `-x`
-    if (i === 0 && char === Operator.Minus) {
+    if (checkMinusX(right, i)) {
       const next = right[i + 1];
       if ([Operator.X, Operator.Sqrt].includes(next)) {
         tokens.push('-1', Operator.Multiply);
@@ -116,11 +128,7 @@ function process(exp: string) {
     }
 
     // 负数在第一位
-    if (
-      (i === 0 && NumberReg.test(right[i + 1])) ||
-      char === Operator.Dot ||
-      NumberReg.test(char)
-    ) {
+    if (checkNumber(right, i)) {
       numStr += char;
       continue;
     }
