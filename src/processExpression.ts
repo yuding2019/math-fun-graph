@@ -2,6 +2,7 @@
  * 处理表达式
  */
 import emit from "./emit";
+import { createError } from './handleError';
 import { Operator, NumberReg, OperatorReg } from "./config";
 
 export interface Expression {
@@ -89,16 +90,12 @@ function generatorExpNodeTree(tokens: string[]): ExpNode {
   return nodes[0] as ExpNode;
 }
 
+// 处理表达式
 function process(exp: string) {
   const [_, right, ...rest] = exp.split('=').map(s => s.trim());
 
-  if (!right) {
-    throw new Error('表达式是不是没写函数体呀');
-  }
-
-  if (rest.length) {
-    throw new Error('表达式是不是多了几个等号呀');
-  }
+  createError(!right, '表达式是不是没写函数体呀');
+  createError(!!rest.length, '表达式是不是多了几个等号呀');
 
   let numStr = '';
   const tokens: string[] = [];
@@ -157,13 +154,11 @@ function process(exp: string) {
     tokens.push(numStr);
   }
 
-  if (brackets.length) {
-    throw new Error('括号匹配不上了，检查一下表达式吧');
-  }
-
-  if (!tokens.length || (tokens.length === 1 && tokens[0] !== Operator.X && Number.isNaN(+tokens[0]))) {
-    throw new Error('函数是不是写错了呀，我怎么解析不了了');
-  }
+  createError(!!brackets.length, '括号匹配不上了，检查一下表达式吧');
+  createError(
+    !tokens.length || (tokens[0] !== Operator.X && Number.isNaN(+tokens[0])),
+    '函数是不是写错了呀，我怎么解析不了了',
+  );
 
   const expression: Expression = {
     raw: exp,

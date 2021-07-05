@@ -35,7 +35,7 @@ function watchConfirm(confirm: HTMLButtonElement, input: HTMLInputElement) {
       if (exp === oldValue) return;
 
       oldValue = exp;
-      emit.emit('confirm:exp', exp);
+      emit.emit('confirm:exp', exp.toLowerCase());
     }
   ));
 }
