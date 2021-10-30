@@ -17,5 +17,13 @@ export const Operator = {
 export const NumberReg = /\-?[0-9]+/;
 export const OperatorReg = /[\+\-\×\÷\^\√\(\)\/]/;
 
+export const ExpTypeEnum = {
+  VAR: 'var',
+  NUMBER: 'number',
+  OPERATOR: 'operator',
+} as const;
+
+export type ExpType = typeof ExpTypeEnum[keyof typeof ExpTypeEnum];
+
 export type OperatorType = typeof Operator;
 export type OperatorKey = keyof OperatorType;

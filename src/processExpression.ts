@@ -2,14 +2,13 @@
  * 处理表达式
  */
 import emit from "./emit";
-import { Operator, NumberReg, OperatorReg } from "./config";
+import { Operator, NumberReg, OperatorReg, ExpTypeEnum, ExpType } from "./config";
 
 export interface Expression {
   raw: string;
   body: string;
   node: ExpNode;
 }
-export type ExpType = 'number' | 'var' | 'operator';
 export interface ExpNode {
   type: ExpType;
   value: string;
@@ -18,7 +17,7 @@ export interface ExpNode {
 }
 
 // 构建节点对象
-function expNode(type: ExpType, value: string): ExpNode {
+function createNewExpNode(type: ExpType, value: string): ExpNode {
   return {
     type,
     value,
@@ -31,7 +30,7 @@ function expNode(type: ExpType, value: string): ExpNode {
 function generatorExpNodeTree(tokens: string[]): ExpNode {
   if (tokens.length === 1) {
     const value = tokens[0];
-    return expNode(value === 'x' ? 'var' : 'number', value);
+    return createNewExpNode(value === 'x' ? ExpTypeEnum.VAR : ExpTypeEnum.NUMBER, value);
   }
   
   const nodes: (ExpNode | string)[] = [...tokens];
@@ -52,15 +51,20 @@ function generatorExpNodeTree(tokens: string[]): ExpNode {
     const left = nodes[index - 1];
     const right = nodes[index + 1];
 
-    const root = expNode('operator', operator);
-    root.right = typeof right === 'object' ? right : expNode(NumberReg.test(right) ? 'number' : 'var', right);
+    const root = createNewExpNode(ExpTypeEnum.OPERATOR, operator);
+
+    root.right = typeof right === 'object'
+      ? right
+      : createNewExpNode(NumberReg.test(right) ? ExpTypeEnum.NUMBER : ExpTypeEnum.VAR, right);
     // 根号特殊处理
     if (operator === Operator.Sqrt) {
       nodes.splice(index, 2, root);
       return root;
     }
 
-    root.left = typeof left === 'object' ? left : expNode(NumberReg.test(left) ? 'number' : 'var', left);    
+    root.left = typeof left === 'object'
+      ? left
+      : createNewExpNode(NumberReg.test(left) ? ExpTypeEnum.NUMBER : ExpTypeEnum.VAR, left);    
     nodes.splice(index - 1, 3, root);
     return root;
   }
@@ -69,19 +73,25 @@ function generatorExpNodeTree(tokens: string[]): ExpNode {
   // 取操作符两边的节点，然后调用`helper`构造一个ExpNode
   // 优先级高的运算操作在二叉树层级较高的地方，然后计算的时候，深度优先遍历进行计算，就完成运算符的优先级计算
   while (nodes.length !== 1) {
-    let index = nodes.findIndex(node => typeof node === 'string' && [Operator.Power, Operator.Sqrt].includes(node));
+    let index = nodes.findIndex(node => {
+      return typeof node === 'string' && [Operator.Power, Operator.Sqrt].includes(node);
+    });
     if (index >= 0) {
       helper(index);
       continue;
     }
 
-    index = nodes.findIndex(node => typeof node === 'string' && [Operator.Multiply, Operator.Divide, Operator.Divide2].includes(node));
+    index = nodes.findIndex(node => {
+      return typeof node === 'string' && [Operator.Multiply, Operator.Divide, Operator.Divide2].includes(node);
+    });
     if (index > 0) {
       helper(index);
       continue;
     }
 
-    index = nodes.findIndex(node => typeof node === 'string' && [Operator.Plus, Operator.Minus].includes(node));
+    index = nodes.findIndex(node => {
+      return typeof node === 'string' && [Operator.Plus, Operator.Minus].includes(node);
+    });
     if (index > 0) {
       helper(index);
     }
@@ -104,16 +114,16 @@ function process(exp: string) {
   const tokens: string[] = [];
   const brackets: string[] = [];
   for (let i = 0; i < right.length; i++) {
-    const char = right[i];
-    if (char === ' ') continue;
+    const current = right[i];
+    if (current === ' ') continue;
 
     // 判断 `-x`
-    if (i === 0 && char === Operator.Minus) {
+    if (i === 0 && current === Operator.Minus) {
       const next = right[i + 1];
       if ([Operator.X, Operator.Sqrt].includes(next)) {
         tokens.push('-1', Operator.Multiply);
       } else if (NumberReg.test(next)) {
-        numStr += char;
+        numStr += current;
       }
       continue;
     }
@@ -121,34 +131,34 @@ function process(exp: string) {
     // 负数在第一位
     if (
       (i === 0 && NumberReg.test(right[i + 1])) ||
-      char === Operator.Dot ||
-      NumberReg.test(char)
+      current === Operator.Dot ||
+      NumberReg.test(current)
     ) {
-      numStr += char;
+      numStr += current;
       continue;
     }
 
-    if ([Operator.X, Operator.Left].includes(char)) {
+    if ([Operator.X, Operator.Left].includes(current)) {
       if (numStr) {
         tokens.push(numStr, Operator.Multiply);
         numStr = '';
       }
-      tokens.push(char);
+      tokens.push(current);
 
-      if (char === Operator.Left) {
+      if (current === Operator.Left) {
         brackets.push(Operator.Right);
       }
       continue;
     }
 
-    if (OperatorReg.test(char)) {
+    if (OperatorReg.test(current)) {
       if (numStr) {
         tokens.push(numStr);
         numStr = '';
       }
-      tokens.push(char);
+      tokens.push(current);
 
-      if (char === Operator.Right) {
+      if (current === Operator.Right) {
         brackets.pop();
       }
     }

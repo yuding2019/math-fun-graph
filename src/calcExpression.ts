@@ -1,4 +1,4 @@
-import { Operator } from "./config";
+import { Operator, ExpTypeEnum } from "./config";
 import { ExpNode } from "./processExpression";
 
 export function calc(op: string, left: string | number, right: string | number, x: number) {
@@ -33,20 +33,34 @@ export function calc(op: string, left: string | number, right: string | number, 
   return res;
 }
 
-export default function calcExpression(exp: ExpNode, x: number): number {
-  const { left, right, value, type } = exp;
+export default function calcExpression(expNode: ExpNode, x: number): number {
+  const {
+    left,
+    right,
+    value,
+    type,
+  } = expNode;
 
   if (!left && right && value === Operator.Sqrt) {
-    return right.type === 'operator'
+    return right.type === ExpTypeEnum.OPERATOR
       ? calc(value, 0, calcExpression(right, x), x)
       : calc(value, 0, right.value, x);
   }
   
+  // 类似 y=1 y=x
   if (!left || !right) return type === 'number' ? Number(value) : x;
 
-  if (left.type !== 'operator' && right.type !== 'operator') {
+  if (
+    left.type !== ExpTypeEnum.OPERATOR &&
+    right.type !== ExpTypeEnum.OPERATOR
+  ) {
     return calc(value, left.value, right.value, x);
   }
   
-  return calc(exp.value, calcExpression(left, x), calcExpression(right, x), x);
+  return calc(
+    expNode.value,
+    calcExpression(left, x),
+    calcExpression(right, x),
+    x,
+  );
 }

@@ -5,7 +5,6 @@ import handleError from './handleError';
 
 import './styles/index.less';
 
-
 function start() {
   watchExpression();
   waitConfirm();
